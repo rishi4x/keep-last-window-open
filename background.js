@@ -38,6 +38,11 @@ async function processWindow(windowId) {
   processing.set(windowId, true);
 
   try {
+    // Skip processing if this isn't a normal browser window (e.g., PWA/app windows)
+    const window = await chrome.windows.get(windowId);
+    if (window.type !== "normal") {
+      return;
+    }
     // Only apply buffer logic when there's exactly one window
     const allWindows = await chrome.windows.getAll({ windowTypes: ["normal"] });
     if (allWindows.length > 1) {
@@ -57,10 +62,12 @@ async function processWindow(windowId) {
     }
 
     const bufferTab = tabs.find(isBufferTab);
-    const unpinnedTabs = tabs.filter(t => !t.pinned);
+    const unpinnedTabs = tabs.filter((t) => !t.pinned);
 
     // Case 0: A pinned tab at index 0 is no longer a new tab (user navigated it) - unpin it
-    const usedBuffer = tabs.find(t => t.pinned && t.index === 0 && !isNewTabPage(t));
+    const usedBuffer = tabs.find(
+      (t) => t.pinned && t.index === 0 && !isNewTabPage(t),
+    );
     if (usedBuffer) {
       await chrome.tabs.update(usedBuffer.id, { pinned: false });
       // Reprocess after unpinning to handle buffer creation
@@ -76,7 +83,7 @@ async function processWindow(windowId) {
         url: "chrome://newtab",
         pinned: true,
         active: false,
-        index: 0
+        index: 0,
       });
       return;
     }
@@ -88,7 +95,7 @@ async function processWindow(windowId) {
         url: "chrome://newtab",
         pinned: true,
         active: false,
-        index: 0
+        index: 0,
       });
       return;
     }
@@ -98,7 +105,6 @@ async function processWindow(windowId) {
       await chrome.tabs.remove(bufferTab.id);
       return;
     }
-
   } catch (e) {
     // Window might have been closed, ignore errors
   } finally {
