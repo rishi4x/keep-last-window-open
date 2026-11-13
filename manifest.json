@@ -13,9 +13,9 @@
       "32": "icons/icon32.png"
     }
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Prevents the last window from closing by maintaining a pinned buffer tab",
-  "permissions": ["tabs"],
+  "permissions": ["tabs", "sessions"],
   "background": {
     "service_worker": "background.js"
   }
